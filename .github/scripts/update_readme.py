@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 README_PATH = "README.md"
-PROBLEM_DIR = "leetcode/problems/python"
+PROBLEM_DIR = "problems/python"
 LOG_START = "<!-- log:start -->"
 LOG_END = "<!-- log:end -->"
 
