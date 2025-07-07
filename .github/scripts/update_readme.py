@@ -2,11 +2,9 @@ import os
 from datetime import datetime, timezone, timedelta
 
 README_PATH = "README.md"
-PROBLEM_DIR = "problems/python"  # ← あなたの環境に合わせて
+PROBLEM_DIR = "problems/python"
 LOG_START = "<!-- log:start -->"
 LOG_END = "<!-- log:end -->"
-
-# JSTのタイムゾーンを定義（+09:00）
 JST = timezone(timedelta(hours=9))
 
 def get_logged_files(lines):
@@ -18,25 +16,31 @@ def get_logged_files(lines):
     return logged
 
 def main():
+    if not os.path.exists(README_PATH):
+        print(f"{README_PATH} not found.")
+        return
+
     with open(README_PATH, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    start = next(i for i, line in enumerate(lines) if LOG_START in line) + 1
-    end = next(i for i, line in enumerate(lines) if LOG_END in line)
+    try:
+        start = next(i for i, line in enumerate(lines) if LOG_START in line) + 1
+        end = next(i for i, line in enumerate(lines) if LOG_END in line)
+    except StopIteration:
+        print("LOG markers not found in README.")
+        return
 
-    logged_paths = get_logged_files(lines[start:end])
+    existing_log_lines = lines[start:end]
+    logged_paths = get_logged_files(existing_log_lines)
     new_logs = []
 
     for filename in sorted(os.listdir(PROBLEM_DIR)):
         if filename.endswith(".py"):
             path = f"{PROBLEM_DIR}/{filename}"
             if path not in logged_paths:
-                # ファイルの最終更新日時を取得（秒 → datetime）→ JST に変換
                 mod_timestamp = os.path.getmtime(path)
                 mod_time_jst = datetime.fromtimestamp(mod_timestamp, JST)
                 formatted_time = mod_time_jst.strftime('%Y-%m-%d %H:%M')
-
-                # ログ行を作成
                 log_line = f"- {formatted_time}: [{filename}]({path})\n"
                 new_logs.append(log_line)
 
@@ -44,7 +48,10 @@ def main():
         print("No new problems to log.")
         return
 
-    new_lines = lines[:start] + new_logs + lines[end:]
+    # 新しいログを上に追加
+    updated_log_lines = new_logs + existing_log_lines
+    new_lines = lines[:start] + updated_log_lines + lines[end:]
+
     with open(README_PATH, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
 
