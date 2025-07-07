@@ -3,7 +3,7 @@ name: Update README on LeetCode push
 on:
   push:
     paths:
-      - 'leetcode/problems/python/**.py'
+      - 'problems/python/**.py'
   workflow_dispatch:
 
 jobs:
